@@ -57,6 +57,7 @@ const LandingPage = () => (
         <h2 className="text-4xl font-bold text-white serif mb-6">Prime Location</h2>
         <p className="text-slate-300 text-lg leading-relaxed mb-8">
       Nestled close to the college campus, LuxStay offers a peaceful and convenient living experience just a 5-minute shuttle ride from the main university grounds. Enjoy a calm and comfortable environment without compromising on accessibility.
+        </p>
         <div className="flex items-center gap-4 text-amber-400 font-bold">
             <MapPin />
             <span>Line 1,Knowledge Park 2,Greater Noida</span>
