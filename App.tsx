@@ -56,7 +56,7 @@ const LandingPage = () => (
       <div>
         <h2 className="text-4xl font-bold text-white serif mb-6">Prime Location</h2>
         <p className="text-slate-300 text-lg leading-relaxed mb-8">
-          Nestled on the coastline, LuxStay offers breathtaking ocean views while being just a 5-minute shuttle ride from the main university campus. 
+          Nestled on the coastline,LuxStay offers breathtaking ocean views while being just a 5-minute shuttle ride from the main university campus. 
           Enjoy the tranquility of nature without compromising on connectivity.
         </p>
         <div className="flex items-center gap-4 text-amber-400 font-bold">
