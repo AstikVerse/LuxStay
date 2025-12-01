@@ -1,5 +1,4 @@
-
-import { initializeApp } from "firebase/app";
+import * as firebaseApp from "firebase/app";
 import { getAuth } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
 
@@ -16,7 +15,7 @@ const firebaseConfig = {
   measurementId: "G-XPMRF4YWPS"
 };
 // Initialize Firebase
-const app = initializeApp(firebaseConfig);
+const app = firebaseApp.initializeApp(firebaseConfig);
 
 // Export services
 export const auth = getAuth(app);
