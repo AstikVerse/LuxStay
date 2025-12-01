@@ -56,12 +56,10 @@ const LandingPage = () => (
       <div>
         <h2 className="text-4xl font-bold text-white serif mb-6">Prime Location</h2>
         <p className="text-slate-300 text-lg leading-relaxed mb-8">
-          Nestled on the coastline,LuxStay offers breathtaking ocean views while being just a 5-minute shuttle ride from the main university campus. 
-          Enjoy the tranquility of nature without compromising on connectivity.
-        </p>
+      Nestled close to the college campus, LuxStay offers a peaceful and convenient living experience just a 5-minute shuttle ride from the main university grounds. Enjoy a calm and comfortable environment without compromising on accessibility.
         <div className="flex items-center gap-4 text-amber-400 font-bold">
             <MapPin />
-            <span>12 Ocean Drive, Cape Coast</span>
+            <span>Line 1,Knowledge Park 2,Greater Noida</span>
         </div>
       </div>
       <div className="rounded-2xl overflow-hidden h-80 bg-slate-900 border border-slate-700 flex items-center justify-center relative group">
