@@ -111,7 +111,7 @@ export const INITIAL_LEAVE_REQUESTS: LeaveRequest[] = [
 
 export const MOCK_ADMIN: User & { password?: string } = {
   id: 'admin1',
-  name: 'Warden Anderson',
+  name: 'Warden',
   email: 'warden@luxstay.com',
   password: 'admin123', // Hardcoded for demo
   role: Role.ADMIN
