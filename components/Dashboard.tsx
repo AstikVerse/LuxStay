@@ -19,7 +19,7 @@ interface DashboardProps {
   onDeleteStudent: (studentId: string, roomNumber: string | null) => void;
   onUpdateFees: (studentId: string, amount: number) => void;
 }
-
+const isDemo = user?.email === "demo@luxstay.com";
 export const Dashboard: React.FC<DashboardProps> = ({ rooms, students, grievances, notices, leaveRequests, onAllocate, onDeallocate, onResolveGrievance, onAddStudent, onAddRoom, onPostNotice, onProcessLeave, onDeleteStudent, onUpdateFees }) => {
   const [activeTab, setActiveTab] = useState<'overview' | 'financials' | 'students' | 'requests'>('overview');
   const [searchTerm, setSearchTerm] = useState('');
@@ -168,6 +168,10 @@ export const Dashboard: React.FC<DashboardProps> = ({ rooms, students, grievance
 
   const handleAddStudentSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+     if(isDemo){
+    alert("Action disabled in Demo Mode 😊");
+    return;
+  }
     onAddStudent({
         ...newStudent,
         year: Number(newStudent.year),
