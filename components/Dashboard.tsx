@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Room, Student, Grievance, Notice, LeaveRequest } from '../types';
 import { AlertCircle, CheckCircle, Search, UserPlus, X, Layers, Printer, Download, DollarSign, Filter, Plus, Users, Phone, BookOpen, Clock, User, LogOut, MessageSquare, Send, Bell, Calendar, Check, Ban, Gift, Loader2, Database, BedDouble, UploadCloud, ArrowRight, CheckSquare, Square, Trash2, Edit, RefreshCw } from 'lucide-react';
 import { dbService } from '../services/db';
+import { auth } from "../firebase";
 
 interface DashboardProps {
   rooms: Room[];
@@ -19,8 +20,9 @@ interface DashboardProps {
   onDeleteStudent: (studentId: string, roomNumber: string | null) => void;
   onUpdateFees: (studentId: string, amount: number) => void;
 }
-const isDemo = user?.email === "demo@luxstay.com";
 export const Dashboard: React.FC<DashboardProps> = ({ rooms, students, grievances, notices, leaveRequests, onAllocate, onDeallocate, onResolveGrievance, onAddStudent, onAddRoom, onPostNotice, onProcessLeave, onDeleteStudent, onUpdateFees }) => {
+  const user = auth.currentUser;
+  const isDemo = user?.email === "demo@luxstay.com";
   const [activeTab, setActiveTab] = useState<'overview' | 'financials' | 'students' | 'requests'>('overview');
   const [searchTerm, setSearchTerm] = useState('');
   const [allocationSlot, setAllocationSlot] = useState<{roomId: string} | null>(null);
