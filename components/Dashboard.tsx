@@ -2,8 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { Room, Student, Grievance, Notice, LeaveRequest } from '../types';
 import { AlertCircle, CheckCircle, Search, UserPlus, X, Layers, Printer, Download, DollarSign, Filter, Plus, Users, Phone, BookOpen, Clock, User, LogOut, MessageSquare, Send, Bell, Calendar, Check, Ban, Gift, Loader2, Database, BedDouble, UploadCloud, ArrowRight, CheckSquare, Square, Trash2, Edit, RefreshCw } from 'lucide-react';
 import { dbService } from '../services/db';
-import { doc, getDoc } from "firebase/firestore";
-import { auth, db } from "../firebase";
 
 interface DashboardProps {
   rooms: Room[];
@@ -22,24 +20,8 @@ interface DashboardProps {
   onUpdateFees: (studentId: string, amount: number) => void;
 }
 export const Dashboard: React.FC<DashboardProps> = ({ rooms, students, grievances, notices, leaveRequests, onAllocate, onDeallocate, onResolveGrievance, onAddStudent, onAddRoom, onPostNotice, onProcessLeave, onDeleteStudent, onUpdateFees }) => {
-  const user = auth.currentUser;
-  const isDemo = user?.email === "demo@luxstay.com";
-    const [role, setRole] = useState<string | null>(null);
 
-  useEffect(() => {
-    const fetchRole = async () => {
-      if (!user) return;
-      const ref = doc(db, "users", user.uid);
-      const snap = await getDoc(ref);
-      if (snap.exists()) {
-        setRole(snap.data().role);
-      }
-    };
-
-    fetchRole();
-  }, []);
-
-  const [activeTab, setActiveTab] = useState<'overview' | 'financials' | 'students' | 'requests'>('overview');
+const [activeTab, setActiveTab] = useState<'overview' | 'financials' | 'students' | 'requests'>('overview');
   const [searchTerm, setSearchTerm] = useState('');
   const [allocationSlot, setAllocationSlot] = useState<{roomId: string} | null>(null);
   const [showPendingOnly, setShowPendingOnly] = useState(false);
@@ -186,10 +168,6 @@ export const Dashboard: React.FC<DashboardProps> = ({ rooms, students, grievance
 
   const handleAddStudentSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-     if(isDemo){
-    alert("Action disabled in Demo Mode 😊");
-    return;
-  }
     onAddStudent({
         ...newStudent,
         year: Number(newStudent.year),
