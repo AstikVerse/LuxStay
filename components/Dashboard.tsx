@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Room, Student, Grievance, Notice, LeaveRequest } from '../types';
 import { AlertCircle, CheckCircle, Search, UserPlus, X, Layers, Printer, Download, DollarSign, Filter, Plus, Users, Phone, BookOpen, Clock, User, LogOut, MessageSquare, Send, Bell, Calendar, Check, Ban, Gift, Loader2, Database, BedDouble, UploadCloud, ArrowRight, CheckSquare, Square, Trash2, Edit, RefreshCw } from 'lucide-react';
 import { dbService } from '../services/db';
-import { auth } from "../firebase";
+import { auth } from "../firebaseConfig";
 
 interface DashboardProps {
   rooms: Room[];
