@@ -1,4 +1,5 @@
-
+  import { GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
+import { auth } from '../firebaseConfig';
 import { 
   collection, 
   doc, 
@@ -80,8 +81,7 @@ export const dbService = {
   /**
    * Login for both Admin and Student
    */
-  import { GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
-import { auth } from '../firebaseConfig';
+
 
 export async function loginWithGoogle(expectedRole: Role): Promise<User | null> {
   const provider = new GoogleAuthProvider();
