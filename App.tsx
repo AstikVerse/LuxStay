@@ -184,7 +184,21 @@ const App: React.FC = () => {
     setCurrentUser(null);
     resetAuth();
   };
-
+const handleGoogleLogin = async () => {
+  setIsLoading(true);
+  setAuthError('');
+  try {
+    const user = await dbService.loginWithGoogle(selectedRole);
+    if (user) {
+      setCurrentUser(user);
+      setShowLoginModal(false);
+    }
+  } catch (err: any) {
+    setAuthError(err.message);
+  } finally {
+    setIsLoading(false);
+  }
+};
   const handleAddStudent = async (newStudentData: Omit<Student, 'id' | 'roomNumber' | 'paidFees'>) => {
     const newStudent = {
         ...newStudentData,
