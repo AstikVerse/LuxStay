@@ -80,6 +80,30 @@ export const dbService = {
   /**
    * Login for both Admin and Student
    */
+  import { GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
+import { auth } from '../firebaseConfig';
+
+export async function loginWithGoogle(expectedRole: Role): Promise<User | null> {
+  const provider = new GoogleAuthProvider();
+  const result = await signInWithPopup(auth, provider);
+  const firebaseUser = result.user;
+
+  // Check if this email exists in your students/admins collection
+  // (however you currently store users — adjust to your Supabase/Firestore table)
+  const dbUser = await getUserByEmail(firebaseUser.email!);
+
+  if (!dbUser) {
+    await auth.signOut();
+    throw new Error('Your email is not registered. Please contact the warden.');
+  }
+
+  if (dbUser.role !== expectedRole) {
+    await auth.signOut();
+    throw new Error(`This account is not registered as a ${expectedRole}.`);
+  }
+
+  return dbUser;
+}
   login: async (email: string, password: string, role: Role) => {
     // 1. Authenticate with Firebase Auth
     const userCredential = await signInWithEmailAndPassword(auth, email, password);
