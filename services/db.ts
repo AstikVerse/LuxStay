@@ -1,5 +1,3 @@
-  import { GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
-import { auth } from '../firebaseConfig';
 import { 
   collection, 
   doc, 
@@ -16,8 +14,9 @@ import {
 import { 
   signInWithEmailAndPassword, 
   createUserWithEmailAndPassword, 
-  signOut, 
-  User as FirebaseUser 
+  signOut,
+  GoogleAuthProvider,
+  signInWithPopup
 } from "firebase/auth";
 import { auth, db } from "../firebaseConfig";
 import { Room, Student, Grievance, Notice, LeaveRequest, Role, User } from '../types';
@@ -34,14 +33,7 @@ export const dbService = {
 
   // --- Auth & User Management ---
 
-  /**
-   * 1. Check if student data exists (created by Admin).
-   * 2. Verify Aadhar.
-   * 3. Create Firebase Auth Account.
-   * 4. Link Auth ID to Student Record.
-   */
   registerStudent: async (email: string, password: string, aadharNumber: string) => {
-    // Step 1: Find the pre-created student record
     const studentsRef = collection(db, 'students');
     const q = query(studentsRef, where('email', '==', email));
     const querySnapshot = await getDocs(q);
@@ -53,16 +45,13 @@ export const dbService = {
     const studentDoc = querySnapshot.docs[0];
     const studentData = studentDoc.data();
 
-    // Step 2: Verify Aadhar
     if (studentData.aadharNumber !== aadharNumber) {
       throw new Error("Aadhar number does not match our records.");
     }
 
-    // Step 3: Create Auth User
     const userCredential = await createUserWithEmailAndPassword(auth, email, password);
     const firebaseUser = userCredential.user;
 
-    // Step 4: Create User Role Doc
     await setDoc(doc(db, 'users', firebaseUser.uid), {
       email: email,
       role: Role.STUDENT,
@@ -78,46 +67,14 @@ export const dbService = {
     };
   },
 
-  /**
-   * Login for both Admin and Student
-   */
-
-
-export async function loginWithGoogle(expectedRole: Role): Promise<User | null> {
-  const provider = new GoogleAuthProvider();
-  const result = await signInWithPopup(auth, provider);
-  const firebaseUser = result.user;
-
-  // Check if this email exists in your students/admins collection
-  // (however you currently store users — adjust to your Supabase/Firestore table)
-  const dbUser = await getUserByEmail(firebaseUser.email!);
-
-  if (!dbUser) {
-    await auth.signOut();
-    throw new Error('Your email is not registered. Please contact the warden.');
-  }
-
-  if (dbUser.role !== expectedRole) {
-    await auth.signOut();
-    throw new Error(`This account is not registered as a ${expectedRole}.`);
-  }
-
-  return dbUser;
-}
   login: async (email: string, password: string, role: Role) => {
-    // 1. Authenticate with Firebase Auth
     const userCredential = await signInWithEmailAndPassword(auth, email, password);
     const firebaseUser = userCredential.user;
 
-    // 2. Fetch User Role Data from 'users' collection
     const userDocRef = doc(db, 'users', firebaseUser.uid);
     const userDocSnap = await getDoc(userDocRef);
 
     if (!userDocSnap.exists()) {
-      // Fallback: If it's the very first admin and they don't have a user doc yet,
-      // you might want to manually create it in Firebase Console, 
-      // OR allow a specific email to bypass (NOT RECOMMENDED FOR PRODUCTION).
-      // For now, we throw error.
       throw new Error("User profile not found.");
     }
 
@@ -128,11 +85,39 @@ export async function loginWithGoogle(expectedRole: Role): Promise<User | null> 
       throw new Error(`Unauthorized. You are not an ${role}.`);
     }
 
-    // Return the user object
     return {
-      id: userData.studentId || firebaseUser.uid, // Use studentId for students, authId for admin
+      id: userData.studentId || firebaseUser.uid,
       name: userData.name || "User",
       email: email,
+      role: userData.role
+    };
+  },
+
+  loginWithGoogle: async (expectedRole: Role): Promise<User | null> => {
+    const provider = new GoogleAuthProvider();
+    const result = await signInWithPopup(auth, provider);
+    const firebaseUser = result.user;
+
+    // Look up the user's role doc in Firestore by their Firebase UID
+    const userDocRef = doc(db, 'users', firebaseUser.uid);
+    const userDocSnap = await getDoc(userDocRef);
+
+    if (!userDocSnap.exists()) {
+      await signOut(auth);
+      throw new Error('Your Google account is not registered in LuxStay. Please contact the warden.');
+    }
+
+    const userData = userDocSnap.data();
+
+    if (userData.role !== expectedRole) {
+      await signOut(auth);
+      throw new Error(`This Google account is not registered as a ${expectedRole}.`);
+    }
+
+    return {
+      id: userData.studentId || firebaseUser.uid,
+      name: userData.name || firebaseUser.displayName || 'User',
+      email: firebaseUser.email!,
       role: userData.role
     };
   },
@@ -146,7 +131,6 @@ export async function loginWithGoogle(expectedRole: Role): Promise<User | null> 
   subscribeToRooms: (cb: (data: Room[]) => void) => {
     return onSnapshot(collection(db, "rooms"), (snapshot) => {
       const rooms = snapshot.docs.map(mapDoc) as Room[];
-      // Sort by room number
       cb(rooms.sort((a,b) => a.number.localeCompare(b.number)));
     });
   },
@@ -158,7 +142,6 @@ export async function loginWithGoogle(expectedRole: Role): Promise<User | null> 
   },
 
   subscribeToGrievances: (cb: (data: Grievance[]) => void) => {
-    // Order by timestamp desc would require an index, for now client sort
     return onSnapshot(collection(db, "grievances"), (snapshot) => {
       const g = snapshot.docs.map(mapDoc) as Grievance[];
       cb(g.sort((a,b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()));
@@ -190,12 +173,9 @@ export async function loginWithGoogle(expectedRole: Role): Promise<User | null> 
   },
 
   deleteStudent: async (studentId: string, roomNumber: string | null) => {
-    // 1. Delete student doc
     await deleteDoc(doc(db, "students", studentId));
 
-    // 2. If allocated, remove from room occupants
     if (roomNumber) {
-      // Find the room doc first
       const q = query(collection(db, "rooms"), where("number", "==", roomNumber));
       const querySnapshot = await getDocs(q);
       
@@ -213,23 +193,19 @@ export async function loginWithGoogle(expectedRole: Role): Promise<User | null> 
   },
 
   allocateRoomCloud: async (room: Room, student: Student) => {
-    // 1. Update Room
     const roomRef = doc(db, "rooms", room.id);
     const newOccupants = [...(room.occupants || []), student.id];
     await updateDoc(roomRef, { occupants: newOccupants });
 
-    // 2. Update Student
     const studentRef = doc(db, "students", student.id);
     await updateDoc(studentRef, { roomNumber: room.number });
   },
 
   deallocateRoomCloud: async (room: Room, studentId: string) => {
-    // 1. Update Room
     const roomRef = doc(db, "rooms", room.id);
-    const newOccupants = (room.occupants || []).filter(id => id !== studentId);
+    const newOccupants = (room.occupants || []).filter((id: string) => id !== studentId);
     await updateDoc(roomRef, { occupants: newOccupants });
 
-    // 2. Update Student
     const studentRef = doc(db, "students", studentId);
     await updateDoc(studentRef, { roomNumber: null });
   },
