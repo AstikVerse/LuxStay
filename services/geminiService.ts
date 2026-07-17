@@ -1,9 +1,9 @@
 import { GoogleGenAI, Type } from "@google/genai";
-
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+const apiKey = import.meta.env.VITE_GEMINI_API_KEY
+const ai = new GoogleGenAI({apiKey});
 
 export const analyzeGrievance = async (description: string, category: string) => {
-  if (!process.env.API_KEY) {
+  if (!apiKey) {
     console.warn("Gemini API Key is missing.");
     return { priority: 'Medium', analysis: "AI Analysis unavailable (Missing API Key)." };
   }
